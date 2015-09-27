@@ -1,0 +1,7 @@
+/csize
+/settty
+/t_getpass
+/t_isatty
+/t_raw
+/t_ttyname
+/winch
