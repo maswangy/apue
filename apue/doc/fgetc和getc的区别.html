@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0060)http://www.cnblogs.com/aqxin/archive/2011/05/20/2052069.html -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>fgetc和getc的区别 - Hi小新 - 博客园</title>
+<link type="text/css" rel="stylesheet" href="./fgetc和getc的区别_files/blog-common.css">
+<link id="MainCss" type="text/css" rel="stylesheet" href="./fgetc和getc的区别_files/bundle-AnotherEon001.css">
+<link title="RSS" type="application/rss+xml" rel="alternate" href="http://www.cnblogs.com/aqxin/rss">
+<link title="RSD" type="application/rsd+xml" rel="EditURI" href="http://www.cnblogs.com/aqxin/rsd.xml">
+<link type="application/wlwmanifest+xml" rel="wlwmanifest" href="http://www.cnblogs.com/aqxin/wlwmanifest.xml">
+<script src="./fgetc和getc的区别_files/jquery.js" type="text/javascript"></script><div><style>*{font-family:undefined,sans-serif!important;}</style></div>  
+<script type="text/javascript">var currentBlogApp = 'aqxin', cb_enable_mathjax=false;</script>
+<script src="./fgetc和getc的区别_files/blog-common.js" type="text/javascript"></script>
+</head>
+<body>
+<a name="top"></a>
+
+<div id="wrapper">
+<div id="header">
+
+<div id="top">
+<h1><a id="Header1_HeaderTitle" class="headermaintitle" href="http://www.cnblogs.com/aqxin/">Hi小新</a></h1>
+<div id="subtitle"></div>
+</div>
+<div id="sub">
+<div class="BlogStats">随笔 - 10, 文章 - 0, 评论 - 9, 引用 - 0</div>
+</div>
+
+
+
+</div>
+<div id="main_container">
+<div id="main_content">
+<div id="content">
+	
+<div id="post_detail">
+	<div class="post">
+		<h2>
+			<a id="cb_post_title_url" href="./fgetc和getc的区别_files/fgetc和getc的区别.html">fgetc和getc的区别</a>
+		</h2>
+		<div class="postbody">
+		<div id="cnblogs_post_body"><p><span style="font-family: &#39;Times New Roman&#39;;" face="Times New Roman">The function getchar is defined to be equivalent to getc(stdin). The difference between the first two functions is that getc can be implemented as a macro, whereas fgetc cannot be implemented as a macro. This means three things.</span></p>
+<p><span style="font-family: &#39;Times New Roman&#39;;" face="Times New Roman">&nbsp;</span></p>
+<p><span style="font-family: &#39;Times New Roman&#39;;" face="Times New Roman">1.The argument to getc should not be an expression with side effects.</span></p>
+<p><span style="font-family: &#39;Times New Roman&#39;;" face="Times New Roman">&nbsp;</span></p>
+<p><span style="font-family: &#39;Times New Roman&#39;;" face="Times New Roman">2.Since fgetc is guaranteed to be a function, we can take its address. This allows us to pass the address of fgetc as an argument to another function.</span></p>
+<p><span style="font-family: &#39;Times New Roman&#39;;" face="Times New Roman">&nbsp;</span></p>
+<p><span style="font-family: &#39;Times New Roman&#39;;" face="Times New Roman">3.Calls to fgetc probably take longer than calls to getc, as it usually takes more time to call a function.</span></p>
+<p><br>两个都是用来从stream中取得一个字符的，区别在于调用getc函数时所用的参数stream不能是有副作用的表达式(稍后解释)，而fgetc函数则可以，也就是说，getc可以被当作宏来调用，而fgetc只能作为函数来调用。&nbsp;<br>一般来说，调用宏比调用函数耗费的时间少。</p>
+<p><br>它们的原型：</p>
+<div class="dp-highlighter">
+<div class="bar">
+<div class="tools">Code:</div>
+</div>
+<ol class="dp-cpp">
+<li class="alt">int&nbsp;fgetc&nbsp;(&nbsp;FILE&nbsp;*&nbsp;stream&nbsp;);&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>int&nbsp;getc(FILE&nbsp;*&nbsp;stream);&nbsp;&nbsp;&nbsp;&nbsp;</li>
+</ol></div>
+<p><br>所以fgetc是一个函数&nbsp;<br>getc是一个宏&nbsp;<br>一般来说宏产生较大的代码，但是避免了函数调用的堆栈操作，所以速度会比较快。</p>
+<p>相关资料也说明了，有例外的情况：&nbsp;<br>1. 很多RISC处理器（如SUN SPARC）使用寄存器窗口重叠技术，&nbsp;<br>（<a href="http://server.chinabyte.com/404/157904_1.shtml" target="_blank">http://server.chinabyte.com/404/157904_1.shtml</a>），&nbsp;<br>在寄存器充足的情况下，根本不需要堆栈操作，fgetc函数比getc宏更快&nbsp;<br>2. 在多线程的情况下，为了线程同步，getc和fgetc可能是相同的。</p>
+<p><strong>有副作用的表达式，指的是表达式执行后，会改变表达式中某些变量的值&nbsp;</strong><br>最简单的如++i，这个表达式执行后，i的值会改变，这样的表达式是不应该在宏调用里出现的</p>
+<div class="dp-highlighter">
+<div class="bar">
+<div class="tools">Code:</div>
+</div>
+<ol class="dp-cpp">
+<li class="alt">#define&nbsp;MACRO_SQRT(x)&nbsp;(x)*(x)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+<li>int&nbsp;func_sqrt(int&nbsp;x)&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">{&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;x&nbsp;*&nbsp;x;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+</ol></div>
+<p><br><br>上面是两个计算平方的方法，一个用宏，一个用函数&nbsp;<br>int i=2;&nbsp;<br>MACRO_SQRT(++i) 与 func_sqrt(++i)将是不同的~&nbsp;</p>
+<div class="dp-highlighter">
+<div class="bar">
+<div class="tools">Code:</div>
+</div>
+<ol class="dp-cpp">
+<li class="alt">int&nbsp;a,b;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">/*&nbsp;下面的代码是正常的&nbsp;*/&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>int&nbsp;i&nbsp;=&nbsp;2;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">a&nbsp;=&nbsp;func_sqrt(++i);&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>printf("a&nbsp;=&nbsp;%d,&nbsp;i&nbsp;=&nbsp;%d\n",&nbsp;a,&nbsp;i);&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">/*&nbsp;下面的代码则是不正常的&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>&nbsp;*代码看起来只是让i自加一次，但由于宏的原因，实际可能不止，因而用宏一般不要使用有“副作用”的表达式&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">&nbsp;*&nbsp;宏会把所有的x替换成x*x,如果放入++i,那么编译器预处理的时候就会将所有的x替换成++i，可想而知会有多少个&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>&nbsp;*&nbsp;++i出现在代码里面呢？又会自加多少次呢？这显然和我们想要的不一样，看代码。&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">&nbsp;*/&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>i&nbsp;=&nbsp;2;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li class="alt">b&nbsp;=&nbsp;MACRO_SQRT(++i);&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;</li>
+<li>printf("a&nbsp;=&nbsp;%d,&nbsp;i&nbsp;=&nbsp;%d\n",&nbsp;b,&nbsp;i);&nbsp;&nbsp;&nbsp;&nbsp;</li>
+</ol></div>
+<p><br><br>&nbsp;<br><strong>&nbsp;总结：fgetc和getc最大的区别在前者是函数，后者是宏，getc由fgetc通过宏实现,调用的时候注意参数stream不能是有副作用的表达式</strong></p></div><div id="MySignature"></div>
+<div class="clear"></div>
+<div id="blog_post_info_block">
+<div id="BlogPostCategory">分类: <a href="http://www.cnblogs.com/aqxin/category/300557.html">C</a></div>
+<div id="EntryTag"></div>
+<div id="blog_post_info"><div id="green_channel">
+<a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(2052069,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+<a id="green_channel_follow" onclick="c_follow();" href="javascript:void(0);">关注我</a>
+<a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a><a id="green_channel_contact" href="http://msg.cnblogs.com/send/Hi%E5%B0%8F%E6%96%B0" target="_blank">联系我</a>
+<a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="./fgetc和getc的区别_files/icon_weibo_24.png" alt=""></a>
+<a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="./fgetc和getc的区别_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+<div id="author_profile_info" class="author_profile_info">
+<a href="http://home.cnblogs.com/u/aqxin/" target="_blank"><img src="./fgetc和getc的区别_files/sample_face.gif" class="author_avatar" alt=""></a>
+<div id="author_profile_detail" class="author_profile_info">
+<a href="http://home.cnblogs.com/u/aqxin/">Hi小新</a><br>
+<a href="http://home.cnblogs.com/u/aqxin/followees">关注 - 3</a><br>
+<a href="http://home.cnblogs.com/u/aqxin/followers">粉丝 - 6</a>
+</div>
+</div>
+<div class="clear"></div>
+<div id="author_profile_honor"></div>
+<div id="author_profile_follow">
+    <a href="javascript:void(0);" onclick="c_follow();return false;">+加关注</a>
+</div>
+</div>
+<div id="div_digg">										
+    <div class="diggit" onclick="votePost(2052069,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">0</span>
+    </div>
+	<div class="buryit" onclick="votePost(2052069,&#39;Bury&#39;)"> 
+		<span class="burynum" id="bury_count">0</span>
+	</div>
+	<div class="clear"></div>	
+	<div class="diggword" id="digg_tips">
+    (请您对文章做出评价)
+    </div>	
+</div>
+</div>
+<div class="clear"></div>
+<div id="post_next_prev"><a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052045.html" class="p_n_p_prefix">« </a> 上一篇：<a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052045.html" title="发布于2011-05-20 15:31">浮点数计算溢出处理问题、浮点数1.#INF和1.#IND 问题</a><br><a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052075.html" class="p_n_p_prefix">» </a> 下一篇：<a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052075.html" title="发布于2011-05-20 15:43">who、whoami命令 和 who am i 命令的区别</a><br></div>
+</div>
+
+
+		</div>
+		<p class="postfoot">
+			posted on <span id="post-date">2011-05-20 15:41</span> <a href="http://www.cnblogs.com/aqxin/">Hi小新</a> 阅读(<span id="post_view_count">3809</span>) 评论(<span id="post_comment_count">0</span>)  <a href="http://i.cnblogs.com/EditPosts.aspx?postid=2052069" rel="nofollow">编辑</a> <a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052069.html#" onclick="AddToWz(2052069);return false;">收藏</a>
+		</p>
+	</div>
+	<script type="text/javascript">var allowComments=true,isLogined=false,cb_blogId=89419,cb_entryId=2052069,cb_blogApp=currentBlogApp,cb_blogUserGuid='15dca7cf-c11f-e011-ac81-842b2b196315',cb_entryCreatedDate='2011/5/20 15:41:00';loadViewCount(cb_entryId);</script>
+	
+	</div><a name="!comments"></a><div id="blog-comments-placeholder"></div><script type="text/javascript">var commentManager = new blogCommentManager();commentManager.renderComments(0);</script>
+<div id="comment_form" class="commentform">
+<a name="commentform"></a>
+<div id="divCommentShow"></div>
+<div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" id="lnk_RefreshComments" onclick="return RefreshCommentList();">刷新评论</a><a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052069.html#" onclick="return RefreshPage();">刷新页面</a><a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052069.html#top">返回顶部</a></div>
+<div id="comment_form_container"><div class="login_tips">注册用户登录后才能发表评论，请 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return login(&#39;commentform&#39;);">登录</a> 或 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return register();">注册</a>，<a href="http://www.cnblogs.com/">访问</a>网站首页。</div></div>
+<div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+<div id="site_nav_under"><a href="http://www.ucancode.com/index.htm" target="_blank">【推荐】50万行VC++源码: 大型组态工控、电力仿真CAD与GIS源码库</a><br><a href="http://www.rongcloud.cn/" target="_blank">【推荐】融云即时通讯云－专注为 App 开发者提供IM云服务</a><br><a href="http://click.aliyun.com/m/1328/" target="_blank">【专享】阿里云9折优惠码：bky758</a><br></div>
+<div id="opt_under_post"></div>
+<script type="text/javascript">
+    var enableGoogleAd = canShowAdsense(); 
+    fixPostBodyFormat();
+</script>
+<div id="google_ad_c1" class="c_ad_block"><a href="http://job.cnblogs.com/" target="_blank"><img width="300" height="250" src="./fgetc和getc的区别_files/job_300_250.jpg" alt=""></a></div>
+<div id="under_post_news"><div class="itnews c_ad_block"><b>最新IT新闻</b>:<br> ·  <a href="http://news.cnblogs.com/n/531000/" target="_blank">太阳表面出现可容纳50个地球的日冕洞</a><br> ·  <a href="http://news.cnblogs.com/n/530999/" target="_blank">美国宇航局发布前往火星的关键技术</a><br> ·  <a href="http://news.cnblogs.com/n/530998/" target="_blank">美光CEO主动降薪50% 响应削减支出举措</a><br> ·  <a href="http://news.cnblogs.com/n/530997/" target="_blank">报告称iPhone 6s在中国激活量超700万部</a><br> ·  <a href="http://news.cnblogs.com/n/530996/" target="_blank">奇葩纸质无人机：支持谷歌眼镜虚拟现实操控</a><br>» <a href="http://news.cnblogs.com/" title="IT新闻" target="_blank">更多新闻...</a></div></div>
+<div id="google_ad_c2" class="c_ad_block"><a href="http://e.jikexueyuan.com/android.html?hmsr=cnb_banner_android_09.14" target="_blank"><img width="468" height="60" src="./fgetc和getc的区别_files/24442-20150914101320586-2077280663.jpg" alt=""></a></div>
+<div id="under_post_kb"><div class="itnews c_ad_block" id="kb_block"><b>最新知识库文章</b>:<br><div id="kb_recent"> ·  <a href="http://kb.cnblogs.com/page/530389/" target="_blank">人，技术与流程</a><br> ·  <a href="http://kb.cnblogs.com/page/530044/" target="_blank">HTTPS背后的加密算法</a><br> ·  <a href="http://kb.cnblogs.com/page/529285/" target="_blank">下一代云计算模式：Docker正掀起个性化商业革命</a><br> ·  <a href="http://kb.cnblogs.com/page/528495/" target="_blank">野生程序员的故事</a><br> ·  <a href="http://kb.cnblogs.com/page/528972/" target="_blank">状态机的两种写法</a><br></div>» <a href="http://kb.cnblogs.com/" target="_blank">更多知识库文章...</a></div></div>
+<div id="HistoryToday" class="c_ad_block"></div>
+<script type="text/javascript">
+$(function () {
+    loadNewsAndKb();
+    loadBlogSignature();
+    LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+    GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate);
+    loadOptUnderPost();
+    GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+    setTimeout(function () { incrementViewCount(cb_entryId); }, 200);
+});
+</script>
+</div>
+
+</div>
+</div>
+<div id="leftmenu">
+
+
+<h3>导航</h3>
+<ul>
+<li>
+<a id="MyLinks1_HomeLink" href="http://www.cnblogs.com/">博客园</a></li>
+<li>
+<a id="MyLinks1_MyHomeLink" class="two_words" href="http://www.cnblogs.com/aqxin/">首页</a></li>
+<li>
+<a id="MyLinks1_NewPostLink" rel="nofollow" href="http://i.cnblogs.com/EditPosts.aspx?opt=1">新随笔</a></li>
+<li>
+<a id="MyLinks1_ContactLink" accesskey="9" class="two_words" rel="nofollow" href="http://msg.cnblogs.com/send/Hi%E5%B0%8F%E6%96%B0">联系</a></li>
+<li>
+<a id="MyLinks1_Syndication" class="two_words" href="http://www.cnblogs.com/aqxin/rss">订阅</a>
+<a id="MyLinks1_XMLLink" href="http://www.cnblogs.com/aqxin/rss"><img src="./fgetc和getc的区别_files/xml.gif" alt="订阅"></a>
+</li>
+<li>
+<a id="MyLinks1_Admin" class="two_words" rel="nofollow" href="http://i.cnblogs.com/">管理</a></li>
+</ul>
+
+<div id="blog-calendar" style=""><table id="blogCalendar" class="Cal" cellspacing="0" cellpadding="0" title="日历">
+	<tbody><tr><td colspan="7"><table class="CalTitle" cellspacing="0">
+		<tbody><tr><td class="CalNextPrev"><a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2011/04/01&#39;);return false;">&lt;</a></td><td align="center">2011年5月</td><td class="CalNextPrev" align="right"><a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2011/06/01&#39;);return false;">&gt;</a></td></tr>
+	</tbody></table></td></tr><tr><th class="CalDayHeader" align="center" abbr="日" scope="col">日</th><th class="CalDayHeader" align="center" abbr="一" scope="col">一</th><th class="CalDayHeader" align="center" abbr="二" scope="col">二</th><th class="CalDayHeader" align="center" abbr="三" scope="col">三</th><th class="CalDayHeader" align="center" abbr="四" scope="col">四</th><th class="CalDayHeader" align="center" abbr="五" scope="col">五</th><th class="CalDayHeader" align="center" abbr="六" scope="col">六</th></tr><tr><td class="CalOtherMonthDay" align="center">24</td><td class="CalOtherMonthDay" align="center">25</td><td class="CalOtherMonthDay" align="center">26</td><td class="CalOtherMonthDay" align="center">27</td><td class="CalOtherMonthDay" align="center">28</td><td class="CalOtherMonthDay" align="center">29</td><td class="CalOtherMonthDay" align="center">30</td></tr><tr><td class="CalWeekendDay" align="center">1</td><td align="center">2</td><td align="center">3</td><td align="center">4</td><td align="center">5</td><td align="center">6</td><td class="CalWeekendDay" align="center">7</td></tr><tr><td class="CalWeekendDay" align="center">8</td><td align="center">9</td><td align="center">10</td><td align="center">11</td><td align="center">12</td><td align="center">13</td><td class="CalWeekendDay" align="center">14</td></tr><tr><td class="CalWeekendDay" align="center">15</td><td align="center">16</td><td align="center">17</td><td align="center">18</td><td align="center">19</td><td align="center"><a href="http://www.cnblogs.com/aqxin/archive/2011/05/20.html"><u>20</u></a></td><td class="CalWeekendDay" align="center">21</td></tr><tr><td class="CalWeekendDay" align="center"><a href="http://www.cnblogs.com/aqxin/archive/2011/05/22.html"><u>22</u></a></td><td align="center"><a href="http://www.cnblogs.com/aqxin/archive/2011/05/23.html"><u>23</u></a></td><td align="center">24</td><td align="center">25</td><td align="center">26</td><td align="center">27</td><td class="CalWeekendDay" align="center">28</td></tr><tr><td class="CalWeekendDay" align="center">29</td><td align="center">30</td><td align="center">31</td><td class="CalOtherMonthDay" align="center">1</td><td class="CalOtherMonthDay" align="center">2</td><td class="CalOtherMonthDay" align="center">3</td><td class="CalOtherMonthDay" align="center">4</td></tr>
+</tbody></table></div><script type="text/javascript">loadBlogDefaultCalendar();</script>
+<meta name="vs_showGrid" content="False">
+
+<h3>公告</h3>
+<div id="blog-news"><div id="profile_block">昵称：<a href="http://home.cnblogs.com/u/aqxin/">Hi小新</a><br>园龄：<a href="http://home.cnblogs.com/u/aqxin/" title="入园时间：2011-01-14">4年9个月</a><br>粉丝：<a href="http://home.cnblogs.com/u/aqxin/followers/">6</a><br>关注：<a href="http://home.cnblogs.com/u/aqxin/followees/">3</a><div id="p_b_follow"><a href="javascript:void(0);" onclick="cnblogs.UserManager.FollowBlogger(&#39;15dca7cf-c11f-e011-ac81-842b2b196315&#39;)">+加关注</a></div></div></div><script type="text/javascript">loadBlogNews();</script>
+
+<div id="blog-sidecolumn"><div id="sidebar_search" class="sidebar-block">
+<div id="sidebar_search" class="mySearch">
+<h3 class="catListTitle">搜索</h3>
+<div id="sidebar_search_box">
+<div id="widget_my_zzk" class="div_my_zzk"><input type="text" id="q" onkeydown="return zzk_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="zzk_go()" type="button" value="找找看" id="btnZzk" class="btn_my_zzk"></div>
+<div id="widget_my_google" class="div_my_zzk"><input type="text" name="google_q" id="google_q" onkeydown="return google_go_enter(event)" class="input_my_zzk">&nbsp;<input onclick="google_go()" type="button" value="谷歌搜索" class="btn_my_zzk"></div>
+</div>
+</div>
+
+</div><div id="sidebar_shortcut" class="sidebar-block">
+<h3 class="catListTitle">常用链接</h3>
+<ul>
+<li><a href="http://www.cnblogs.com/aqxin/p/" title="我的博客的随笔列表">我的随笔</a></li><li><a href="http://www.cnblogs.com/aqxin/MyComments.html" title="我发表过的评论列表">我的评论</a></li><li><a href="http://www.cnblogs.com/aqxin/OtherPosts.html" title="我评论过的随笔列表">我的参与</a></li><li><a href="http://www.cnblogs.com/aqxin/RecentComments.html" title="我的博客的评论列表">最新评论</a></li><li><a href="http://www.cnblogs.com/aqxin/tag/" title="我的博客的标签列表">我的标签</a></li>
+</ul>
+<div id="itemListLin_con" style="display:none;">
+
+</div></div><div id="sidebar_toptags" class="sidebar-block">
+<h3 class="catListTitle">我的标签</h3>
+<div id="MyTag">
+<ul>
+<li><a href="http://www.cnblogs.com/aqxin/tag/C%E8%AF%AD%E8%A8%80/">C语言</a>(3)</li><li><a href="http://www.cnblogs.com/aqxin/tag/%E7%AE%97%E6%B3%95/">算法</a>(3)</li><li><a href="http://www.cnblogs.com/aqxin/tag/Linux/">Linux</a>(2)</li><li><a href="http://www.cnblogs.com/aqxin/tag/Qt/">Qt</a>(1)</li><li><a href="http://www.cnblogs.com/aqxin/tag/%E7%94%9F%E6%B4%BB/">生活</a>(1)</li>
+</ul>
+</div></div><div id="sidebar_categories">
+		<h3>随笔分类<span style="font-size:11px;font-weight:normal">(11)</span></h3>
+		
+				<ul>
+			
+				<li><a id="CatList_LinkList_0_Link_0" href="http://www.cnblogs.com/aqxin/category/300557.html">C(5)</a></li>
+			
+				<li><a id="CatList_LinkList_0_Link_1" href="http://www.cnblogs.com/aqxin/category/300558.html">C++</a></li>
+			
+				<li><a id="CatList_LinkList_0_Link_2" href="http://www.cnblogs.com/aqxin/category/300555.html">Linux(2)</a></li>
+			
+				<li><a id="CatList_LinkList_0_Link_3" href="http://www.cnblogs.com/aqxin/category/300556.html">Qt(1)</a></li>
+			
+				<li><a id="CatList_LinkList_0_Link_4" href="http://www.cnblogs.com/aqxin/category/300559.html">Windows应用</a></li>
+			
+				<li><a id="CatList_LinkList_0_Link_5" href="http://www.cnblogs.com/aqxin/category/300918.html">算法(3)</a></li>
+			
+				</ul>
+			
+	
+		<h3>随笔档案<span style="font-size:11px;font-weight:normal">(10)</span></h3>
+		
+				<ul>
+			
+				<li><a id="CatList_LinkList_1_Link_0" href="http://www.cnblogs.com/aqxin/archive/2012/04.html">2012年4月 (2)</a></li>
+			
+				<li><a id="CatList_LinkList_1_Link_1" href="http://www.cnblogs.com/aqxin/archive/2011/06.html">2011年6月 (2)</a></li>
+			
+				<li><a id="CatList_LinkList_1_Link_2" href="http://www.cnblogs.com/aqxin/archive/2011/05.html">2011年5月 (6)</a></li>
+			
+				</ul>
+			
+	</div><div id="sidebar_recentcomments" class="sidebar-block"><div id="recent_comments_wrap" style="display: none;">
+<h3 class="catListTitle">最新评论</h3>
+<div class="RecentComment" id="RecentComments">
+	<div id="RecentCommentsBlock"></div>
+</div>
+</div></div><div id="sidebar_topviewedposts" class="sidebar-block"><div id="topview_posts_wrap">
+<h3 class="catListTitle">阅读排行榜</h3>
+<div class="RecentComment" id="TopViewPosts"> 
+	<div id="TopViewPostsBlock"><ul><li><a href="http://www.cnblogs.com/aqxin/archive/2011/05/23/2054156.html">1. QT中QWidget、QDialog及QMainWindow的区别(14660)</a></li><li><a href="./fgetc和getc的区别_files/fgetc和getc的区别.html">2. fgetc和getc的区别(3809)</a></li><li><a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052045.html">3. 浮点数计算溢出处理问题、浮点数1.#INF和1.#IND 问题(3561)</a></li><li><a href="http://www.cnblogs.com/aqxin/archive/2011/05/20/2052075.html">4. who、whoami命令 和 who am i 命令的区别(2934)</a></li><li><a href="http://www.cnblogs.com/aqxin/archive/2012/04/02/2430111.html">5. 求二进制数中 1 的个数(1367)</a></li></ul></div>
+</div>
+</div></div><div id="sidebar_topcommentedposts" class="sidebar-block"><div id="topfeedback_posts_wrap">
+<h3 class="catListTitle">评论排行榜</h3>
+<div class="RecentComment" id="TopCommentsPosts">
+	<div id="TopFeedbackPostsBlock"><ul><li><a href="http://www.cnblogs.com/aqxin/archive/2012/04/02/2430111.html">1. 求二进制数中 1 的个数(7)</a></li><li><a href="http://www.cnblogs.com/aqxin/archive/2011/06/06/2073500.html">2. C语言中指针的数据类型小结(2)</a></li></ul></div>
+</div></div></div><div id="sidebar_topdiggedposts" class="sidebar-block"><div id="topdigg_posts_wrap">
+<h3 class="catListTitle">推荐排行榜</h3>
+<div class="RecentComment">
+	<div id="TopDiggPostsBlock"><ul><li><a href="http://www.cnblogs.com/aqxin/archive/2011/05/23/2054156.html">1. QT中QWidget、QDialog及QMainWindow的区别(2)</a></li></ul></div>
+</div></div></div></div><script type="text/javascript">loadBlogSideColumn();</script>
+
+</div>
+</div>
+<div class="clear"></div>
+<div id="footer">
+
+<p id="footer">
+	Powered by: 
+	<br>
+	
+	<a id="Footer1_Hyperlink3" name="Hyperlink1" href="http://www.cnblogs.com/" style="font-family:Verdana;font-size:12px;">博客园</a>
+	<br>
+	Copyright © Hi小新
+</p>
+</div>
+</div>
+
+
+
+</body></html>
